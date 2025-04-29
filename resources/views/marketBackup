@@ -1,0 +1,503 @@
+@extends('layout.general')
+
+@section('content')
+
+    <div class="container">
+        <header class="pb-3 mb-4 border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-5 fw-bold"><i class="fas fa-scroll me-2"></i>Market</h1>
+            </div>
+            <!-- Navegación de pestañas -->
+            <div class="nav-tabs-container mt-3">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link navi active" href="#" data-tab="market"><i class="fas fa-scroll me-1"></i> Market</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link navi" href="#" data-tab="yourMarket"><i class="fas fa-trophy me-1"></i> Your Market</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link navi" href="#" data-tab="history"><i class="fas fa-trophy me-1"></i> History</a>
+                    </li>
+                </ul>
+            </div>
+        </header>
+
+
+
+        <div id="market" class="market-section">
+            <div class="filter-section">
+                <form method="GET" action="" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="searchInput" class="form-label"><i class="fas fa-search me-1"></i> Search Object</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Magical item name..." name="search" value="">
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="categorySelect" class="form-label"><i class="fas fa-book-open me-1"></i> Category</label>
+                        <select name="category" class="form-select" id="categorySelect">
+                            <option value="">All categories</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ htmlspecialchars($cat) }}">
+                                    {{ htmlspecialchars($cat) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="raritySelect" class="form-label"><i class="fas fa-gem me-1"></i> Rarity</label>
+                        <select name="rarity" class="form-select" id="raritySelect">
+                            <option value="">All rarities</option>
+                            @foreach($rarityLevels as $rarityLevel)
+                                <option value="{{ htmlspecialchars($rarityLevel) }}">
+                                    {{ htmlspecialchars($rarityLevel) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
+            </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            @if(!$items)
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-book-dead fa-4x mb-3" style="color: var(--wood-dark);"></i>
+                    <h3>Market is empty</h3>
+                    <p>No magical items match your search</p>
+                </div>
+            @else
+                @foreach ($items as $item)
+                    <div class="col ii-card" data-category="{{ $item['category'] }}"
+                         data-rarity="{{ $item->rarity ?? 'Common' }}">
+                        <div class="card item-card h-100 rarity-{{ strtolower($item['rarity'] ?? 'common') }}"
+                        >
+                            <div class="item-image-container">
+                                <img src="{{ 'https://expanseuniverse.com/grimoire/images/'.$item['image'] }}" class="item-image" alt="">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ $item['item_name'] }} </h5>
+                                <button onclick="showConfirmationPopup('{{ addslashes($item['item_name']) }}', {{ $item['price'] }}, {{ $item['id'] }})">Buy</button>
+                                <span>( {{ $item['price'] }} )</span>
+                                <p class="card-text">
+                                    <span class="badge bg-primary">{{ $item['category'] }}</span>
+                                    @php
+                                        $rarityClasses = [
+                                            'Common' => 'bg-secondary',
+                                            'Uncommon' => 'bg-success',
+                                            'Rare' => 'bg-primary',
+                                            'Epic' => 'bg-purple',
+                                            'Legendary' => 'bg-warning text-dark',
+                                            'Mythic' => 'bg-danger',
+                                        ];
+                                        $rarityClass = $rarityClasses[$item['rarity']] ?? 'bg-secondary';
+                                    @endphp
+                                    <span class="badge {{ $rarityClass }}">{{ $item['rarity'] ?? 'Common' }}</span>
+                                </p>
+
+                                @if (!empty($item->description))
+                                    <div class="item-description mb-3">
+                                        @php
+                                            $shortDesc = Str::limit($item->description, 100, '...');
+                                        @endphp
+                                        <p class="small fst-italic description-text">{{ $shortDesc }}</p>
+
+                                        @if (strlen($item->description) > 100)
+                                            <button type="button" class="btn btn-sm btn-link p-0 show-full-description"
+                                                    data-bs-toggle="modal" data-bs-target="#descriptionModal{{ $item->id }}">
+                                                <i class="fas fa-book-open me-1"></i> Read more
+                                            </button>
+
+                                            <!-- Modal for full description -->
+                                            <div class="modal fade" id="descriptionModal{{ $item->id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">{{ $item->name }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>{!! nl2br(e($item['description'])) !!}</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+
+                                <div class="mt-3">
+                                    @if ($item['health_bonus'] > 0)
+                                        <div><i class="fas fa-heart stat-icon"></i> <span class="stat-value">+{{ $item['health_bonus'] }}</span> Health</div>
+                                    @endif
+
+                                    @if ($item['mana_bonus'] > 0)
+                                        <div><i class="fas fa-hat-wizard stat-icon"></i> <span class="stat-value">+{{ $item['mana_bonus'] }}</span> Mana</div>
+                                    @endif
+
+                                    @if ($item['damage_bonus'] > 0)
+                                        <div><i class="fas fa-fist-raised stat-icon"></i> <span class="stat-value">+{{ $item['damage_bonus'] }}</span> Damage</div>
+                                    @endif
+
+                                    @if ($item['magic_damage_bonus'] > 0)
+                                        <div><i class="fas fa-magic stat-icon"></i> <span class="stat-value">+{{ $item['magic_damage_bonus'] }}</span> Magic Damage</div>
+                                    @endif
+
+                                    @if ($item['range_damage_bonus'] > 0)
+                                        <div><i class="fas fa-bullseye stat-icon"></i> <span class="stat-value">+{{ $item['range_damage_bonus'] }}</span> Range Damage</div>
+                                    @endif
+
+                                    @if ($item['defense_bonus'] > 0)
+                                        <div><i class="fas fa-shield-alt stat-icon"></i> <span class="stat-value">+{{ $item['defense_bonus'] }}</span> Defense</div>
+                                    @endif
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
+        </div>
+        </div>
+
+        <div id="yourMarket" class="market-section" style="display: none;">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                @if(!$itemsUser)
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-book-dead fa-4x mb-3" style="color: var(--wood-dark);"></i>
+                        <h3>Market is empty</h3>
+                        <p>No magical items match your search</p>
+                    </div>
+                @else
+                    @foreach ($itemsUser as $item)
+                        <div class="col ii-card" data-category="{{ $item['category'] }}"
+                             data-rarity="{{ $item->rarity ?? 'Common' }}">
+                            <div class="card item-card h-100 rarity-{{ strtolower($item['rarity'] ?? 'common') }}"
+                            >
+                                <div class="item-image-container">
+                                    <img src="{{ 'https://expanseuniverse.com/grimoire/images/'.$item['image'] }}" class="item-image" alt="">
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $item['item_name'] }} </h5>
+                                    <button onclick="showCancelPopup ('{{ addslashes($item['item_name']) }}', {{ $item['price'] }}, {{ $item['id'] }})">Cancel Offer</button>
+                                    <span>( {{ $item['price'] }} )</span>
+                                    <p class="card-text">
+                                        <span class="badge bg-primary">{{ $item['category'] }}</span>
+                                        @php
+                                            $rarityClasses = [
+                                                'Common' => 'bg-secondary',
+                                                'Uncommon' => 'bg-success',
+                                                'Rare' => 'bg-primary',
+                                                'Epic' => 'bg-purple',
+                                                'Legendary' => 'bg-warning text-dark',
+                                                'Mythic' => 'bg-danger',
+                                            ];
+                                            $rarityClass = $rarityClasses[$item['rarity']] ?? 'bg-secondary';
+                                        @endphp
+                                        <span class="badge {{ $rarityClass }}">{{ $item['rarity'] ?? 'Common' }}</span>
+                                    </p>
+
+                                    @if (!empty($item->description))
+                                        <div class="item-description mb-3">
+                                            @php
+                                                $shortDesc = Str::limit($item->description, 100, '...');
+                                            @endphp
+                                            <p class="small fst-italic description-text">{{ $shortDesc }}</p>
+
+                                            @if (strlen($item->description) > 100)
+                                                <button type="button" class="btn btn-sm btn-link p-0 show-full-description"
+                                                        data-bs-toggle="modal" data-bs-target="#descriptionModal{{ $item->id }}">
+                                                    <i class="fas fa-book-open me-1"></i> Read more
+                                                </button>
+
+                                                <!-- Modal for full description -->
+                                                <div class="modal fade" id="descriptionModal{{ $item->id }}" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">{{ $item->name }}</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>{!! nl2br(e($item['description'])) !!}</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+
+        <div id="history" class="market-section" style="display: none;">
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Amount</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($transactions as $transaction)
+                    <td>{{$transaction['nameItem']}}</td>
+                    <td>{{$transaction['amount']}}</td>
+                    <td>{{$transaction['price']}}</td>
+                    <td>{{$transaction['status']}}</td>
+
+                @endforeach
+
+                </tbody>
+
+            </table>
+
+        </div>
+        <!-- Tu código HTML para los filtros y los items aquí -->
+    </div>
+    <script>
+
+        var idItem = 0;
+        var nameItem = '';
+        function showConfirmationPopup(itemName, itemPrice, idd) {
+            const popup = document.createElement('div');
+            idItem = idd;
+            popup.classList.add('popup-overlay');
+            popup.innerHTML = `
+                        <div class="popup-content">
+                            <h3>Confirmación de Compra</h3>
+                            <p>¿Estás seguro que quieres comprar ${itemName} por ${itemPrice}?</p>
+                            <button onclick="confirmPurchase()">Confirmar</button>
+                            <button onclick="closePopup()">Cancelar</button>
+                        </div>
+                    `;
+            document.body.appendChild(popup);
+        }
+
+        function closePopup() {
+            const popup = document.querySelector('.popup-overlay');
+            if (popup) {
+                popup.remove();
+            }
+        }
+
+        function confirmPurchase() {
+            // Aquí puedes agregar la lógica para confirmar la compra
+
+            $.ajax({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                url: 'market/buy',
+                data: { idItem: idItem},
+                type: 'post',
+                success: function (response) {
+
+                    const popup = document.createElement('div');
+                    popup.classList.add('popup-overlay');
+                    popup.innerHTML = `
+                        <div class="popup-content">
+                            <h3>Congratulations</h3>
+                            <p>You buy ${nameItem}</p>
+                            <button onclick="closePopup()">Done</button>
+                        </div>
+                    `;
+                    document.body.appendChild(popup);
+
+                }
+            })
+
+          //  closePopup();
+        }
+
+
+        function showCancelPopup(itemName, itemPrice, idd) {
+            const popup = document.createElement('div');
+            idItem = idd;
+            popup.classList.add('popup-overlay');
+            popup.innerHTML = `
+                        <div class="popup-content">
+                            <h3>Confirmación de Cancelacion</h3>
+                            <p>¿Estás seguro que quieres cancelar ${itemName}?</p>
+                            <button onclick="confirmCancel()">Confirmar</button>
+                            <button onclick="closePopup()">Cancelar</button>
+                        </div>
+                    `;
+            document.body.appendChild(popup);
+        }
+
+
+
+        function confirmCancel() {
+            // Aquí puedes agregar la lógica para confirmar la compra
+
+            $.ajax({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                url: 'market/cancel',
+                data: { idItem: idItem},
+                type: 'post',
+                success: function (response) {
+
+                    const popup = document.createElement('div');
+                    popup.classList.add('popup-overlay');
+                    popup.innerHTML = `
+                        <div class="popup-content">
+                            <h3>Donde</h3>
+                            <p>Cancel ${nameItem}</p>
+                            <button onclick="closePopup()">Done</button>
+                        </div>
+                    `;
+                    document.body.appendChild(popup);
+
+                }
+            })
+
+            //  closePopup();
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const tabs = document.querySelectorAll('.navi');
+            const sections = document.querySelectorAll('.market-section');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetTab = this.getAttribute('data-tab');
+
+                    // Remove active class from all tabs and sections
+                    tabs.forEach(t => t.classList.remove('active'));
+                    sections.forEach(s => s.style.display = 'none');
+
+                    // Add active class to the clicked tab and show the corresponding section
+                    this.classList.add('active');
+                    document.getElementById(targetTab).style.display = 'block';
+                });
+            });
+
+
+            const searchInput = document.getElementById('searchInput');
+            const categorySelect = document.getElementById('categorySelect');
+            const raritySelect = document.getElementById('raritySelect');
+            const itemCards = document.querySelectorAll('.ii-card');
+
+            function filterItems() {
+                const searchValue = searchInput.value.toLowerCase();
+                const selectedCategory = categorySelect.value;
+                const selectedRarity = raritySelect.value;
+
+                itemCards.forEach(card => {
+                    const itemName = card.querySelector('.card-title').textContent.toLowerCase();
+                    const itemCategory = card.getAttribute('data-category');
+                    const itemRarity = card.getAttribute('data-rarity');
+
+                    const matchesSearch = itemName.includes(searchValue);
+                    const matchesCategory = selectedCategory === '' || itemCategory === selectedCategory;
+                    const matchesRarity = selectedRarity === '' || itemRarity === selectedRarity;
+
+                    if (matchesSearch && matchesCategory && matchesRarity) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', filterItems);
+            categorySelect.addEventListener('change', filterItems);
+            raritySelect.addEventListener('change', filterItems);
+        });
+    </script>
+@endsection
+
+<style>
+
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .popup-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .popup-content button {
+        margin: 5px;
+    }
+    .container {
+        width: 100%;
+    }
+    .filter-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .market-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .nft-card {
+        background-color: #2c2c2c;
+        padding: 15px;
+        text-align: center;
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+    .nft-card:hover {
+        transform: scale(1.05);
+    }
+    .nft-card img {
+        width: 100%;
+        max-width: 200px;
+        border-radius: 10px;
+    }
+    .nft-card h3 {
+        margin: 10px 0;
+        font-size: 18px;
+    }
+    .medieval-button {
+        padding: 8px 15px;
+        background-color: #795649;
+        border: none;
+        color: #fff;
+        font-size: 14px;
+        cursor: pointer;
+        margin: 5px;
+        border-radius: 5px;
+    }
+    .medieval-button:hover {
+        background-color: #8a6e2f;
+    }
+</style>
