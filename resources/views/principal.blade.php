@@ -252,7 +252,7 @@
                 <h1 class="display-5 fw-bold"><i class="fas fa-dungeon me-2"></i> Last Dungeon</h1>
                 <div>
                     <a href="https://lastdungeon.com/lastversion.zip" download  class="btn btn-info btn-sm"><i class="fas fa-download me-1"></i> Manual Download (Windows)</a>
-                    <a href="http://lastdungeon.com/launcher.zip" download class="btn btn-warning btn-sm"><i class="fas fa-rocket me-1"></i> Download Launcher (Windows)</a>
+                    <a href="https://lastdungeon.com/launcher.zip" download class="btn btn-warning btn-sm"><i class="fas fa-rocket me-1"></i> Download Launcher (Windows)</a>
                 </div>
             </div>
 
