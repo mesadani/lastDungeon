@@ -991,7 +991,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark  fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
-            <a class=" {{ Request::is('*') ? 'active' : '' }}" href="{{ url('/') }}"><img src="{{ asset('images/logo.png') }}" alt="Logo" width="40" height="40" class="d-inline-block align-text-top"></a>
+            <a class=" {{ Request::is('*') ? 'active' : '' }}" href="{{ url('/') }}"><img src="{{ asset('public/images/logo.png') }}" alt="Logo" width="40" height="40" class="d-inline-block align-text-top"></a>
 
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -1002,6 +1002,11 @@
 
                  <li class="nav-item">
                     <a class="nav-link {{ Request::is('grimorio*') ? 'active' : '' }}" href="{{ url('/grimorio') }}"><i class="fas fa-scroll me-1"></i>Grimorio</a>
+
+
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ Request::is('recipes*') ? 'active' : '' }}" href="{{ url('/recipes') }}"><i class="fas fa-scroll me-1"></i>Recipes</a>
 
 
                 </li>
